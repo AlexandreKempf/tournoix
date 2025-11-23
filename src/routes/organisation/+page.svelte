@@ -1,132 +1,604 @@
 <script lang="ts">
-	import Classement from '$lib/components/classement.svelte';
-	import SwissGroup from '$lib/components/data-table-simple.svelte';
-	import Poule from '$lib/components/data-table-poule.svelte';
-	import teams from '../teams.ts';
+	import { MarkerType, SvelteFlow, Background, type Node, type Edge } from '@xyflow/svelte';
+	import '@xyflow/svelte/dist/style.css';
+	import TeamNode from '$lib/components/teamnode.svelte';
+	import GroupNode from '$lib/components/groupnode.svelte';
+	import { pb } from '../pocketbase.ts';
+	import type { Match, Team } from '$lib/components/schemas.ts';
+
+	let teams = $state(await pb.collection('teams').getFullList());
+	let matches = $state(await pb.collection('matches').getFullList());
+
+	function is_winner(match: Match, team: Team) {
+		return (
+			(match.teamA == team.name && match.scoreA > match.scoreB) ||
+			(match.teamB == team.name && match.scoreB > match.scoreA)
+		);
+	}
+	function is_loser(match: Match, team: Team) {
+		return (
+			(match.teamA == team.name && match.scoreA < match.scoreB) ||
+			(match.teamB == team.name && match.scoreB < match.scoreA)
+		);
+	}
+	const top_margin_group = 30;
+	const bottom_margin_group = 10;
+	const vertical_gap = 5;
+	const team_height = 20;
+
+	let nodes = $state.raw<Node[]>([
+		{
+			id: 'SwissRound',
+			type: 'group2',
+			data: { label: 'Ronde Suisse', connection_left: false, connection_right: false },
+			position: { x: 0, y: 0 },
+			width: 1000,
+			height: 600,
+			draggable: false
+		},
+		{
+			id: 'FirstRound',
+			type: 'group2',
+			data: {
+				label: 'All teams',
+				connection_left: false,
+				connection_right: true,
+				background: 'bg-white'
+			},
+			position: { x: 50, y: 150 },
+			width: 160,
+			parentId: 'SwissRound',
+
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 12 - vertical_gap,
+			draggable: false
+		},
+		...teams.map((team: Team, idx: number) => {
+			return {
+				id: 'FirstRound' + idx,
+				type: 'team',
+				data: { label: team.name },
+				position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+				parentId: 'FirstRound',
+				width: 150,
+				height: team_height,
+				draggable: false
+			};
+		}),
+		{
+			id: 'SecondRoundV',
+			type: 'group2',
+			data: {
+				label: '1 🏆 0 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-white'
+			},
+			position: { x: 300, y: 125 },
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 6 - vertical_gap,
+			parentId: 'SwissRound',
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter((match: Match) => is_winner(match, team) && match.phase == 'swiss1')
+						.length == 1
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'SecondRoundV' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'SecondRoundV',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'SecondRoundD',
+			type: 'group2',
+			data: {
+				label: '0 🏆 1 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-white'
+			},
+			position: { x: 300, y: 325 },
+			width: 160,
+			parentId: 'SwissRound',
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 6 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter((match: Match) => is_loser(match, team) && match.phase == 'swiss1')
+						.length == 1
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'SecondRoundD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'SecondRoundD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'ThirdRoundVV',
+			type: 'group2',
+			data: {
+				label: '2 🏆 0 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-yellow-100'
+			},
+			position: { x: 550, y: 70 },
+			parentId: 'SwissRound',
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 3 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter(
+						(match: Match) => is_winner(match, team) && ['swiss1', 'swiss2'].includes(match.phase)
+					).length == 2
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'ThirdRoundVV' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'ThirdRoundVV',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'ThirdRoundVD',
+			type: 'group2',
+			data: {
+				label: '1 🏆 1 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-white'
+			},
+			position: { x: 550, y: 225 },
+			parentId: 'SwissRound',
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 6 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter(
+						(match: Match) => is_winner(match, team) && ['swiss1', 'swiss2'].includes(match.phase)
+					).length == 1 &&
+					matches.filter(
+						(match: Match) => is_loser(match, team) && ['swiss1', 'swiss2'].includes(match.phase)
+					).length == 1
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'ThirdRoundVD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'ThirdRoundVD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'ThirdRoundDD',
+			type: 'group2',
+			data: {
+				label: '0 🏆 2 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-blue-100'
+			},
+			position: { x: 550, y: 450 },
+			parentId: 'SwissRound',
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 3 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter(
+						(match: Match) => is_loser(match, team) && ['swiss1', 'swiss2'].includes(match.phase)
+					).length == 2
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'ThirdRoundDD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'ThirdRoundDD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'FourthRoundVVD',
+			type: 'group2',
+			data: {
+				label: '2 🏆 1 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-yellow-100'
+			},
+			position: { x: 800, y: 200 },
+			parentId: 'SwissRound',
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 3 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter((match: Match) => is_winner(match, team)).length == 2 &&
+					matches.filter((match: Match) => is_loser(match, team)).length == 1
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'FourthRoundVVD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'FourthRoundVVD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'FourthRoundVDD',
+			type: 'group2',
+			data: {
+				label: '1 🏆 2 💀',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-blue-100'
+			},
+			position: { x: 800, y: 320 },
+			parentId: 'SwissRound',
+			width: 160,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 3 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter(
+				(team: Team) =>
+					matches.filter((match: Match) => is_winner(match, team)).length == 1 &&
+					matches.filter((match: Match) => is_loser(match, team)).length == 2
+			)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'FourthRoundVDD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'FourthRoundVDD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'Poule',
+			type: 'group2',
+			data: { label: 'Classement', connection_left: false, connection_right: false },
+			position: { x: 1100, y: 0 },
+			width: 400,
+			height: 600,
+			draggable: false
+		},
+		{
+			id: 'PouleV',
+			type: 'group2',
+			data: {
+				label: 'Poule 1-6',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-yellow-100'
+			},
+			position: { x: 50, y: 70 },
+			width: 300,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 6 - vertical_gap,
+			parentId: 'Poule',
+			draggable: false
+		},
+		...teams
+			.filter((team: Team) => matches.filter((match: Match) => is_winner(match, team)).length == 2)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'PouleV' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'PouleV',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'PouleD',
+			type: 'group2',
+			data: {
+				label: 'Poule 7-12',
+				connection_left: true,
+				connection_right: true,
+				background: 'bg-blue-100'
+			},
+			position: { x: 50, y: 325 },
+			width: 300,
+			parentId: 'Poule',
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 6 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter((team: Team) => matches.filter((match: Match) => is_loser(match, team)).length == 2)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'PouleD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'PouleD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'Finale',
+			type: 'group2',
+			data: { label: 'Finales', connection_left: false, connection_right: false },
+			position: { x: 1600, y: 0 },
+			width: 250,
+			height: 600,
+			draggable: false
+		},
+
+		{
+			id: 'FinaleV',
+			type: 'group2',
+			data: {
+				label: 'Grande finale',
+				connection_left: true,
+				connection_right: false,
+				background: 'bg-yellow-100'
+			},
+			position: { x: 50, y: 70 },
+			width: 150,
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 2 - vertical_gap,
+			parentId: 'Finale',
+			draggable: false
+		},
+		...teams
+			.filter((team: Team) => false)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'FinaleV' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'FinaleV',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			}),
+		{
+			id: 'FinaleD',
+			type: 'group2',
+			data: {
+				label: 'Finale consolante',
+				connection_left: true,
+				connection_right: false,
+				background: 'bg-blue-100'
+			},
+			position: { x: 50, y: 325 },
+			width: 150,
+			parentId: 'Finale',
+			height:
+				top_margin_group + bottom_margin_group + (team_height + vertical_gap) * 2 - vertical_gap,
+			draggable: false
+		},
+		...teams
+			.filter((team: Team) => false)
+			.map((team: Team, idx: number) => {
+				return {
+					id: 'FinaleD' + idx,
+					type: 'team',
+					data: { label: team.name },
+					position: { x: 8, y: top_margin_group + (team_height + vertical_gap) * idx },
+					parentId: 'FinaleD',
+					width: 150,
+					height: 20,
+					draggable: false
+				};
+			})
+	]);
+
+	const nodeTypes = { team: TeamNode, group2: GroupNode };
+	let edges = $state.raw<Edge[]>([
+		{
+			id: 'e1-2V',
+			source: 'FirstRound',
+			target: 'SecondRoundV',
+			label: '🏆',
+			animated: matches.length <= 6,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e1-2D',
+			source: 'FirstRound',
+			target: 'SecondRoundD',
+			label: '💀',
+			animated: matches.length <= 6,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e2V-3VV',
+			source: 'SecondRoundV',
+			target: 'ThirdRoundVV',
+			label: '🏆',
+			animated: matches.length <= 12,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e2D-3VD',
+			source: 'SecondRoundD',
+			target: 'ThirdRoundVD',
+			label: '🏆',
+			animated: matches.length <= 12,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e2V-3VD',
+			source: 'SecondRoundV',
+			target: 'ThirdRoundVD',
+			label: '💀',
+			animated: matches.length <= 12,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e2D-3DD',
+			source: 'SecondRoundD',
+			target: 'ThirdRoundDD',
+			label: '💀',
+			animated: matches.length <= 12,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e3VD-4VVD',
+			source: 'ThirdRoundVD',
+			target: 'FourthRoundVVD',
+			label: '🏆',
+			animated: matches.length <= 15,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e3VD-4VDD',
+			source: 'ThirdRoundVD',
+			target: 'FourthRoundVDD',
+			label: '💀',
+			animated: matches.length <= 15,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e3VV-PouleV',
+			source: 'ThirdRoundVV',
+			target: 'PouleV',
+			label: '',
+			animated: matches.length <= 45,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e4VVD-PouleV',
+			source: 'FourthRoundVVD',
+			target: 'PouleV',
+			label: '',
+			animated: matches.length <= 45,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e4VDD-PouleD',
+			source: 'FourthRoundVDD',
+			target: 'PouleD',
+			label: '',
+			animated: matches.length <= 45,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+		{
+			id: 'e3DD-PouleD',
+			source: 'ThirdRoundDD',
+			target: 'PouleD',
+			label: '',
+			animated: matches.length <= 45,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+
+		{
+			id: 'PouleV-FinaleV',
+			source: 'PouleV',
+			target: 'FinaleV',
+			label: '1er et 2ème',
+			animated: true,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		},
+
+		{
+			id: 'PouleD-FinaleD',
+			source: 'PouleD',
+			target: 'FinaleD',
+			label: '1er et 2ème',
+			animated: true,
+			markerEnd: {
+				type: MarkerType.ArrowClosed
+			}
+		}
+	]);
 </script>
 
-<div
-	class="flex gap-6
-"
->
-	<div class="flex flex-col">
-		<h1 class="mx-8 mt-4 mb-4 scroll-m-20 text-xl font-extrabold tracking-tight text-balance">
-			Ronde Suisse
-		</h1>
-		<div class="flex flex-wrap">
-			<SwissGroup data={teams} title="Toutes les équipes" default_message="" />
-			<div class="flex flex-col justify-around">
-				<SwissGroup
-					data={teams.filter((team) => team.swiss_points[0] == 1)}
-					title="🏆 Victoire"
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter((team) => team.swiss_points[0] == 0)}
-					title="🤕 Défaite"
-					default_message=""
-				/>
-			</div>
-			<div class="flex flex-col justify-around">
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 2 && team.swiss_points.reduce((a, b) => a + b, 0) == 2
-					)}
-					title="🏆🏆 2 Victoires"
-					winner={true}
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 2 && team.swiss_points.reduce((a, b) => a + b, 0) == 1
-					)}
-					title="🏆🤕 1 Victoire 1 Défaite"
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 2 && team.swiss_points.reduce((a, b) => a + b, 0) == 0
-					)}
-					title="🤕🤕 2 Défaites"
-					winner={false}
-					default_message=""
-				/>
-			</div>
-			<div class="flex flex-col justify-around">
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 2 && team.swiss_points.reduce((a, b) => a + b, 0) == 2
-					)}
-					title="🏆🏆 2 Victoires"
-					winner={true}
-					hidden={true}
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 3 && team.swiss_points.reduce((a, b) => a + b, 0) == 2
-					)}
-					title="🏆🏆🤕 2 Victoires 1 Défaite"
-					winner={true}
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 3 && team.swiss_points.reduce((a, b) => a + b, 0) == 1
-					)}
-					title="🏆🤕🤕 1 Victoire 2 Défaites"
-					winner={false}
-					default_message=""
-				/>
-				<SwissGroup
-					data={teams.filter(
-						(team) =>
-							team.swiss_points.length == 3 && team.swiss_points.reduce((a, b) => a + b, 0) == 0
-					)}
-					title="🤕🤕 2 Défaites"
-					winner={false}
-					hidden={true}
-					default_message=""
-				/>
-			</div>
-		</div>
-	</div>
-	<div>
-		<h1 class="mx-8 mt-4 mb-4 scroll-m-20 text-xl font-extrabold tracking-tight text-balance">
-			Poule de classement
-		</h1>
-		<div class="flex h-full flex-col justify-around">
-			<Poule
-				data={teams.filter(
-					(team) =>
-						team.swiss_points.length >= 2 && team.swiss_points.filter((x) => x == 1).length >= 2
-				)}
-				winner={true}
-				default_message="Équipes de 1 à 6"
-			/>
-			<Poule
-				data={teams.filter(
-					(team) =>
-						team.swiss_points.length >= 2 && team.swiss_points.filter((x) => x == 0).length >= 2
-				)}
-				winner={false}
-				default_message="Équipes de 7 à 12"
-			/>
-		</div>
-	</div>
-	<div>
-		<h1 class="mx-8 mt-4 mb-4 scroll-m-20 text-xl font-extrabold tracking-tight text-balance">
-			Finales
-		</h1>
-		<div class="flex h-full flex-col justify-around">
-			<SwissGroup data={[]} title="Grande finale" default_message="" />
-			<SwissGroup data={[]} title="Finale consolante" default_message="" />
-		</div>
-	</div>
+<div style:width="100vw" style:height="100vh">
+	<SvelteFlow bind:nodes bind:edges fitView {nodeTypes}>
+		<Background />
+	</SvelteFlow>
 </div>

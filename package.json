@@ -54,5 +54,12 @@
 			"esbuild",
 			"@tailwindcss/oxide"
 		]
+	},
+	"dependencies": {
+		"@sveltejs/adapter-node": "^5.4.0",
+		"@xyflow/svelte": "^1.4.2",
+		"lowdb": "^7.0.1",
+		"pocketbase": "^0.26.3",
+		"ts-pattern": "^5.9.0"
 	}
 }

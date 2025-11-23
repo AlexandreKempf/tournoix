@@ -3,7 +3,6 @@
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import SiteHeader from '$lib/components/site-header.svelte';
 	import '../app.css';
-	import IconAvocado from '@tabler/icons-svelte/icons/avocado';
 
 	let { children } = $props();
 </script>

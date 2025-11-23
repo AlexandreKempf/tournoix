@@ -24,7 +24,7 @@
 			},
 			{
 				title: 'Matchs',
-				url: '#',
+				url: '/matches',
 				icon: ListDetailsIcon
 			}
 		]

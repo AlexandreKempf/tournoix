@@ -1,13 +1,19 @@
 import { z } from "zod/v4";
 
 export const team = z.object({
-	id: z.number(),
 	name: z.string(),
 	city: z.string(),
-	inscription: z.string(),
-	phone: z.string(),
-	swiss_points: z.array(z.number()),
-	bracket_points: z.array(z.number()),
+});
+
+export const match = z.object({
+	teamA: z.string(),
+	teamB: z.string(),
+	referee: z.string(),
+	scoreA: z.number(),
+	scoreB: z.number(),
+	court: z.number(),
+	phase: z.string(),
 });
 
 export type Team = z.infer<typeof team>;
+export type Match = z.infer<typeof match>;
