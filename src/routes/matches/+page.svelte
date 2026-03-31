@@ -6,9 +6,31 @@
 	import { createMatches } from './logic.ts';
 	import * as Alert from '$lib/components/ui/alert/index.js';
 	import type { Match } from '$lib/components/schemas.ts';
+	import { onMount } from 'svelte';
 
-	let matches = $state(await pb.collection('matches').getFullList());
-	let teams = $state(await pb.collection('teams').getFullList());
+	let teams = $state<any[]>([]);
+	let matches = $state<any[]>([]);
+
+	onMount(async () => {
+		teams = await pb.collection('teams').getFullList();
+		matches = await pb.collection('matches').getFullList();
+
+		// subscribe to all changes on the "teams" collection
+		pb.collection('matches').subscribe('*', function (e) {
+			if (e.action === 'create') {
+				matches.push(e.record);
+			}
+
+			if (e.action === 'update') {
+				matches = matches.map((m) => (m.id === e.record.id ? e.record : m));
+			}
+		});
+
+		return () => {
+			// cleanup when component is destroyed
+			pb.collection('teams').unsubscribe('*');
+		};
+	});
 	let alert = $state('');
 
 	async function createNewMatches() {
@@ -24,22 +46,18 @@
 
 		setTimeout(() => {
 			alert = '';
-		}, 4000); // 7 seconds
+		}, 3000);
 	}
 </script>
 
-<div class="mx-8 flex flex-wrap justify-around gap-6">
-	<div class="flex grow flex-col items-center gap-2">
-		<h2 class="font-bold">Terrain A</h2>
-		<div class="w-full min-w-120">
-			<DataTable data={matches.filter((m: Match) => m.court == 0)} {columns} />
-		</div>
+<div class="flex flex-col xl:flex-row">
+	<div class="mx-1 mb-4 flex flex-col sm:mx-8 xl:w-[50%]">
+		<h2 class="m-2 mx-auto text-2xl font-bold">Terrain A</h2>
+		<DataTable data={matches.filter((m: Match) => m.court == 0)} {columns} />
 	</div>
-	<div class="flex grow flex-col items-center gap-2">
-		<h2 class="font-bold">Terrain B</h2>
-		<div class="w-full min-w-120">
-			<DataTable data={matches.filter((m: Match) => m.court == 1)} {columns} />
-		</div>
+	<div class="mx-1 flex flex-col sm:mx-8 xl:w-[50%]">
+		<h2 class="m-2 mx-auto text-2xl font-bold">Terrain B</h2>
+		<DataTable data={matches.filter((m: Match) => m.court == 1)} {columns} />
 	</div>
 </div>
 

@@ -3,7 +3,6 @@
 	import AppSidebar from '$lib/components/app-sidebar.svelte';
 	import SiteHeader from '$lib/components/site-header.svelte';
 	import '../app.css';
-
 	let { children } = $props();
 </script>
 
@@ -15,6 +14,7 @@
 	style="--sidebar-width: calc(var(--spacing) * 60); --header-height: calc(var(--spacing) * 12);"
 >
 	<AppSidebar variant="inset" />
+
 	<Sidebar.Inset>
 		<SiteHeader />
 		<div class="flex flex-1 flex-col">

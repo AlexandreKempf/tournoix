@@ -6,6 +6,7 @@ export const team = z.object({
 });
 
 export const match = z.object({
+	id: z.string().optional(),
 	teamA: z.string(),
 	teamB: z.string(),
 	referee: z.string(),

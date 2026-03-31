@@ -1,22 +1,16 @@
 <script lang="ts">
-	import CameraIcon from '@tabler/icons-svelte/icons/camera';
-	import IconUsers from '@tabler/icons-svelte/icons/users';
-	import FileAiIcon from '@tabler/icons-svelte/icons/file-ai';
-	import FileDescriptionIcon from '@tabler/icons-svelte/icons/file-description';
 	import IconTournament from '@tabler/icons-svelte/icons/tournament';
+	import IconBuildingHospital from '@tabler/icons-svelte/icons/building-hospital';
 	import IconAvocado from '@tabler/icons-svelte/icons/avocado';
 	import ListDetailsIcon from '@tabler/icons-svelte/icons/list-details';
+	import BookIcon from '@tabler/icons-svelte/icons/book-2';
 	import NavMain from './nav-main.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
+	import HelpIcon from '@tabler/icons-svelte/icons/help';
 
 	const data = {
 		navMain: [
-			{
-				title: 'Équipes',
-				url: '/teams',
-				icon: IconUsers
-			},
 			{
 				title: 'Organisation',
 				url: '/organisation',
@@ -26,6 +20,21 @@
 				title: 'Matchs',
 				url: '/matches',
 				icon: ListDetailsIcon
+			},
+			{
+				title: 'Règles',
+				url: '/rules',
+				icon: BookIcon
+			},
+			{
+				title: 'Téléthon',
+				url: '/telethon',
+				icon: IconBuildingHospital
+			},
+			{
+				title: 'Aide',
+				url: '/tutorial',
+				icon: HelpIcon
 			}
 		]
 	};

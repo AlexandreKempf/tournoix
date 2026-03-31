@@ -5,11 +5,4 @@
 	let { data }: NodeProps = $props();
 </script>
 
-<div class="text-xs">
-	<Badge
-		variant="outline"
-		class={myTeam.name === data.label ? 'border-green-500 text-green-500' : ''}
-	>
-		{data.label.length > 21 ? data.label.slice(0, 21) + '...' : data.label}
-	</Badge>
-</div>
+<div class="text-right">{data.label}</div>

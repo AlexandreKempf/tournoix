@@ -4,3 +4,4 @@ import { env } from '$env/dynamic/public';
 const url = env.PUBLIC_POCKETBASE_URL ?? 'http://127.0.0.1:8080';
 
 export const pb = new PocketBase(url);
+pb.autoCancellation(false);
