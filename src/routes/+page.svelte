@@ -10,6 +10,11 @@
 <div class="mx-2 flex flex-col items-center sm:mx-4 lg:mx-40">
 	<h1 class="mb-4 text-center text-xl font-bold">Bienvenue au tournoi de Drefféac</h1>
 
+	<p class="mb-4 text-center">
+		Heureux de te voir parmi nous ! Suis tes matchs, consulte le classement en temps réel
+		et profite de la fête au profit du Téléthon.
+	</p>
+
 	<p class="mb-4 text-center">Sélectionne une des options suivantes:</p>
 	<div class="mb-4 flex w-full flex-wrap justify-center gap-4">
 		<Button href="/matches" variant="outline" size="lg" class="h-20 w-[90%] max-w-140"
