@@ -2,7 +2,7 @@
 </script>
 
 <div class="mx-4 text-gray-900">
-	<h1 class="mb-4 text-3xl font-bold">Règlement du Tournoi du Téléthon</h1>
+	<h1 class="mb-4 text-3xl font-bold">Règlement du Tournoi</h1>
 
 	<section class="mb-6">
 		<h2 class="mb-2 text-2xl font-semibold">1. Format général</h2>
@@ -14,7 +14,7 @@
 		</ol>
 		<p>
 			L’objectif est de garantir un maximum de jeu pour toutes les équipes (environ 8 matchs), dans
-			une ambiance conviviale et sportive, tout en soutenant le Téléthon.
+			une ambiance conviviale et sportive.
 		</p>
 	</section>
 

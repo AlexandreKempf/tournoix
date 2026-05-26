@@ -1,6 +1,5 @@
 <script lang="ts">
 	import IconTournament from '@tabler/icons-svelte/icons/tournament';
-	import IconBuildingHospital from '@tabler/icons-svelte/icons/building-hospital';
 	import IconAvocado from '@tabler/icons-svelte/icons/avocado';
 	import ListDetailsIcon from '@tabler/icons-svelte/icons/list-details';
 	import BookIcon from '@tabler/icons-svelte/icons/book-2';
@@ -25,11 +24,6 @@
 				title: 'Règles',
 				url: '/rules',
 				icon: BookIcon
-			},
-			{
-				title: 'Téléthon',
-				url: '/telethon',
-				icon: IconBuildingHospital
 			},
 			{
 				title: 'Aide',
