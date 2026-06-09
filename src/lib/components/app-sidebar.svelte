@@ -4,6 +4,7 @@
 	import ListDetailsIcon from '@tabler/icons-svelte/icons/list-details';
 	import BookIcon from '@tabler/icons-svelte/icons/book-2';
 	import NavMain from './nav-main.svelte';
+	import NavRanking from './nav-ranking.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar/index.js';
 	import type { ComponentProps } from 'svelte';
 	import HelpIcon from '@tabler/icons-svelte/icons/help';
@@ -53,5 +54,6 @@
 	</Sidebar.Header>
 	<Sidebar.Content>
 		<NavMain items={data.navMain} />
+		<NavRanking />
 	</Sidebar.Content>
 </Sidebar.Root>
