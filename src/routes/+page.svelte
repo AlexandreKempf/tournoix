@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import IconTournament from '@tabler/icons-svelte/icons/tournament';
-	import IconBuildingHospital from '@tabler/icons-svelte/icons/building-hospital';
 	import ListDetailsIcon from '@tabler/icons-svelte/icons/list-details';
 	import BookIcon from '@tabler/icons-svelte/icons/book-2';
 	import HelpIcon from '@tabler/icons-svelte/icons/help';
@@ -12,7 +11,7 @@
 
 	<p class="mb-4 text-center">
 		Heureux de te voir parmi nous ! Suis tes matchs, consulte le classement en temps réel
-		et profite de la fête au profit du Téléthon.
+		et profite de la fête.
 	</p>
 
 	<p class="mb-4 text-center">Sélectionne une des options suivantes:</p>
@@ -35,12 +34,6 @@
 			><div class="flex items-center gap-2">
 				<BookIcon />
 				<p>Lire les règles</p>
-			</div>
-		</Button>
-		<Button href="/telethon" variant="outline" size="lg" class="h-10 w-[90%] max-w-140"
-			><div class="flex items-center gap-2">
-				<IconBuildingHospital />
-				<p>Infos téléthon</p>
 			</div>
 		</Button>
 		<Button href="/tutorial" variant="outline" size="lg" class="h-10 w-[90%] max-w-140"

@@ -23,7 +23,7 @@
 		<div class="flex items-center gap-1 truncate overflow-hidden px-4 lg:gap-2 lg:px-6">
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mx-2 data-[orientation=vertical]:h-4" />
-			<h1 class="hidden text-base font-medium sm:inline">Drefféac tournoi du téléthon</h1>
+			<h1 class="hidden text-base font-medium sm:inline">Drefféac tournoi</h1>
 		</div>
 		<Select.Root type="single">
 			<Select.Trigger class="ml-4 w-[180px]"
